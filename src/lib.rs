@@ -45,6 +45,7 @@ where
 {
     routes: RegexSet,
     patterns: Vec<Regex>,
+    #[allow(clippy::type_complexity)]
     handlers: Vec<(Box<dyn Matcher<H::Body>>, H)>,
 }
 
@@ -75,20 +76,25 @@ where
     H: Handler,
 {
     routes: Vec<String>,
+    #[allow(clippy::type_complexity)]
     handlers: Vec<(Box<dyn Matcher<H::Body>>, H)>,
 }
 
-impl<H> Builder<H>
+impl<H> Default for Builder<H>
 where
     H: Handler,
 {
-    pub fn new() -> Self {
+    fn default() -> Self {
         Builder {
             routes: vec![],
             handlers: vec![],
         }
     }
-
+}
+impl<H> Builder<H>
+where
+    H: Handler,
+{
     pub fn any(
         self,
         route: &str,
@@ -160,7 +166,7 @@ pub fn routes<H>() -> Builder<H>
 where
     H: Handler,
 {
-    Builder::new()
+    Builder::default()
 }
 
 #[cfg(test)]
