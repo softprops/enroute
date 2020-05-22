@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["enroute"] = [{"text":"impl&lt;H&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"enroute/struct.Builder.html\" title=\"struct enroute::Builder\">Builder</a>&lt;H&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;H: <a class=\"trait\" href=\"enroute/trait.Handler.html\" title=\"trait enroute::Handler\">Handler</a>,&nbsp;</span>","synthetic":false,"types":["enroute::Builder"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

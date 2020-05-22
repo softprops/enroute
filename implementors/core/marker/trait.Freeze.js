@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["enroute"] = [{"text":"impl&lt;H&gt; !Freeze for <a class=\"struct\" href=\"enroute/struct.Router.html\" title=\"struct enroute::Router\">Router</a>&lt;H&gt;","synthetic":true,"types":["enroute::Router"]},{"text":"impl&lt;H&gt; Freeze for <a class=\"struct\" href=\"enroute/struct.Builder.html\" title=\"struct enroute::Builder\">Builder</a>&lt;H&gt;","synthetic":true,"types":["enroute::Builder"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
