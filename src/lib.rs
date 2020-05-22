@@ -9,7 +9,7 @@ pub trait Matcher<B> {
     ) -> bool;
 }
 
-struct Any {}
+struct Any;
 
 impl<B> Matcher<B> for Any {
     fn matches(
@@ -100,7 +100,7 @@ where
         route: &str,
         handler: H,
     ) -> Self {
-        self.route(Any {}, route, handler)
+        self.route(Any, route, handler)
     }
 
     pub fn get(
@@ -172,10 +172,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    struct Test {
-        value: u32,
-    }
-    impl Handler for Test {
+    use std::{future::Future, pin::Pin};
+
+    impl Handler for u32 {
         type Body = ();
         type Output = u32;
         fn call(
@@ -183,16 +182,13 @@ mod tests {
             _: Request<Self::Body>,
             _: Option<Captures>,
         ) -> Self::Output {
-            self.value
+            *self
         }
     }
 
     #[test]
     fn it_works() -> Result<(), Box<dyn Error>> {
-        let routes = routes()
-            .get("/", Test { value: 1 })
-            .get("/foo/(?P<id>\\d+)", Test { value: 2 })
-            .build()?;
+        let routes = routes().get("/", 1).get("/foo/(?P<id>\\d+)", 2).build()?;
         assert_eq!(
             routes.route(
                 http::Request::get("/")
@@ -225,6 +221,73 @@ mod tests {
             ),
             None
         );
+        Ok(())
+    }
+
+    // insert async framework here
+    type Func = fn(Request<()>) -> Pin<Box<dyn Future<Output = http::Response<u32>>>>;
+
+    impl Handler for Func {
+        type Body = ();
+        type Output = Pin<Box<dyn Future<Output = http::Response<u32>>>>;
+        fn call(
+            &self,
+            req: Request<Self::Body>,
+            _: Option<Captures>,
+        ) -> Self::Output {
+            self(req)
+        }
+    }
+
+    #[tokio::test]
+    async fn it_works_with_futures() -> Result<(), Box<dyn Error>> {
+        let routes = routes::<Func>()
+            .get("/", |_| {
+                Box::pin(async { http::Response::builder().body(1).unwrap() })
+            })
+            .get("/foo/(?P<id>\\d+)", |_| {
+                Box::pin(async { http::Response::builder().body(2).unwrap() })
+            })
+            .build()?;
+
+        assert_eq!(
+            routes
+                .route(
+                    http::Request::get("/")
+                        .body(())
+                        .expect("failed to build request")
+                )
+                .expect("expected match")
+                .await
+                .body(),
+            &1
+        );
+        assert!(routes
+            .route(
+                http::Request::get("/foo/str")
+                    .body(())
+                    .expect("failed to build request")
+            )
+            .is_none());
+        assert_eq!(
+            routes
+                .route(
+                    http::Request::get("/foo/1")
+                        .body(())
+                        .expect("failed to build request")
+                )
+                .expect("expected match")
+                .await
+                .body(),
+            &2
+        );
+        assert!(routes
+            .route(
+                http::Request::get("/nope")
+                    .body(())
+                    .expect("failed to build request")
+            )
+            .is_none());
         Ok(())
     }
 }
