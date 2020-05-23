@@ -107,9 +107,7 @@ where
     H: Handler,
 {
     routes: RegexSet,
-    patterns: Vec<Regex>,
-    #[allow(clippy::type_complexity)]
-    handlers: Vec<(Box<dyn Matcher<H::Body>>, H)>,
+    handlers: Vec<(Regex, Box<dyn Matcher<H::Body>>, H)>,
 }
 
 impl<H> Router<H>
@@ -124,11 +122,10 @@ where
         let uri = req.uri().clone();
         let uri = uri.path();
         for index in self.routes.matches(uri) {
-            let (ref matcher, ref handler) = self.handlers[index];
+            let (ref regex, ref matcher, ref handler) = self.handlers[index];
             if !matcher.matches(&req) {
                 continue;
             }
-            let regex = &self.patterns[index];
             return Some(handler.call(req, regex.captures(uri)));
         }
         None
@@ -140,9 +137,8 @@ pub struct Builder<H>
 where
     H: Handler,
 {
-    routes: Vec<String>,
     #[allow(clippy::type_complexity)]
-    handlers: Vec<(Box<dyn Matcher<H::Body>>, H)>,
+    routes: Vec<(String, Box<dyn Matcher<H::Body>>, H)>,
 }
 
 impl<H> Default for Builder<H>
@@ -150,10 +146,7 @@ where
     H: Handler,
 {
     fn default() -> Self {
-        Builder {
-            routes: vec![],
-            handlers: vec![],
-        }
+        Builder { routes: vec![] }
     }
 }
 impl<H> Builder<H>
@@ -211,20 +204,19 @@ where
         M: Matcher<H::Body> + 'static,
     {
         // \A (begin) ... \Z (end)
-        self.routes.push([r"\A", route, r"\z"].join(""));
-        self.handlers.push((Box::new(matcher), handler));
+        self.routes
+            .push(([r"\A", route, r"\z"].join(""), Box::new(matcher), handler));
         self
     }
 
     pub fn build(self) -> Result<Router<H>, Box<dyn Error>> {
         Ok(Router {
-            routes: RegexSet::new(self.routes.iter())?,
-            patterns: self
+            routes: RegexSet::new(self.routes.iter().map(|(pat, _, _)| pat))?,
+            handlers: self
                 .routes
-                .iter()
-                .map(|r| Regex::new(r))
+                .into_iter()
+                .map(|(pat, matcher, handler)| Regex::new(&pat).map(|r| (r, matcher, handler)))
                 .collect::<Result<_, _>>()?,
-            handlers: self.handlers,
         })
     }
 }
