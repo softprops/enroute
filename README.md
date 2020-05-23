@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-   standalone wasm-compatiable http router
+   wasm-compatible parsimonious http request router
 </p>
 
 <div align="center">

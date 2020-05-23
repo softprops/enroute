@@ -1,7 +1,42 @@
-use http::{Method, Request};
+//! A parsimonious, framework and IO agnostic HTTP request router.
+//!
+//! enroute is opinionated about being simple with a focus fast and flexible. 
+//! 
+//! ## Simple
+//! 
+//! There are very few components to enroute. There is no IO component and there
+//! are no framework specific coupling points.
+//! 
+//! ## Fast
+//! 
+//! enroute leverage the regex crates [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests
+//! on all patterns in a single pass. This means there is less work for enroute 
+//! to do.
+//! 
+//! ## Flexible
+//!
+//! Regexes are universal language for pattern recognition. As such there
+//! is incentive to not reinvent a router specific language for http path matching
+//! Many routing systems provide a means of extracting information from paths
+//! Regex capture groups also do this with built in way of expressing restrictions
+//! on the desired type within those capture groups. enroute exposes these captures 
+//! directly to handlers.
+//! Because regular expressions are a universal language it lends it self to more
+//! problem domains than can be preemptively designed by an invented 
+//! syntax.
+//!
+//! enroute takes a wholistic view of requests with a notion of a `Matcher`
+//! which is an extension point for matching additional parts of requests.
+//! Perhaps on http methods, or header values or query string parameters.
+use http::{header::HeaderName, HeaderValue, Method, Request};
 use regex::{Captures, Regex, RegexSet};
 use std::error::Error;
 
+/// A secondary means of routing requests
+/// via request introspection
+///
+/// A handful of Matcher impls are provided for http type values.
+/// These also serve as an extension point
 pub trait Matcher<B> {
     fn matches(
         &self,
@@ -29,6 +64,33 @@ impl<B> Matcher<B> for Method {
     }
 }
 
+impl<B> Matcher<B> for HeaderName {
+    fn matches(
+        &self,
+        req: &Request<B>,
+    ) -> bool {
+        req.headers().get(self).is_some()
+    }
+}
+
+impl<B> Matcher<B> for (HeaderName, HeaderValue) {
+    fn matches(
+        &self,
+        req: &Request<B>,
+    ) -> bool {
+        let (k, v) = self;
+        req.headers().get(k).filter(|value| value == v).is_some()
+    }
+}
+
+/// An abstract request handler
+///
+/// The only concrete details assumed as that a handler 
+/// is interested in an http request and optionally information
+/// extracted from a request path template
+///
+/// All details about what a handler responds with is up to its implementation,
+/// maximizing the flexibility adapting to different runtimes
 pub trait Handler {
     type Body;
     type Output;
@@ -39,6 +101,7 @@ pub trait Handler {
     ) -> Self::Output;
 }
 
+/// A compiled set of routes
 pub struct Router<H>
 where
     H: Handler,
@@ -53,6 +116,7 @@ impl<H> Router<H>
 where
     H: Handler,
 {
+    /// The primary means of resolving a route
     pub fn route(
         &self,
         req: Request<H::Body>,
@@ -71,6 +135,7 @@ where
     }
 }
 
+/// Collects a list of route definitions
 pub struct Builder<H>
 where
     H: Handler,
@@ -95,6 +160,7 @@ impl<H> Builder<H>
 where
     H: Handler,
 {
+    /// Routes requests by path
     pub fn any(
         self,
         route: &str,
@@ -103,6 +169,7 @@ where
         self.route(Any, route, handler)
     }
 
+    /// Routes requests by path and HTTP GET method
     pub fn get(
         self,
         route: &str,
@@ -162,6 +229,7 @@ where
     }
 }
 
+/// Creates a new `Builder`
 pub fn routes<H>() -> Builder<H>
 where
     H: Handler,
@@ -188,39 +256,18 @@ mod tests {
 
     #[test]
     fn it_works() -> Result<(), Box<dyn Error>> {
-        let routes = routes().get("/", 1).get("/foo/(?P<id>\\d+)", 2).build()?;
+        let routes = routes::<u32>()
+            .get("/", 1)
+            .get("/foo/(?P<id>\\d+)", 2)
+            .route(HeaderName::from_static("x-canary-test"), "/test", 3)
+            .build()?;
+        assert_eq!(routes.route(http::Request::get("/").body(())?), Some(1));
+        assert_eq!(routes.route(http::Request::get("/foo/str").body(())?), None);
         assert_eq!(
-            routes.route(
-                http::Request::get("/")
-                    .body(())
-                    .expect("failed to build request")
-            ),
-            Some(1)
-        );
-        assert_eq!(
-            routes.route(
-                http::Request::get("/foo/str")
-                    .body(())
-                    .expect("failed to build request")
-            ),
-            None
-        );
-        assert_eq!(
-            routes.route(
-                http::Request::get("/foo/1")
-                    .body(())
-                    .expect("failed to build request")
-            ),
+            routes.route(http::Request::get("/foo/1").body(())?),
             Some(2)
         );
-        assert_eq!(
-            routes.route(
-                http::Request::get("/nope")
-                    .body(())
-                    .expect("failed to build request")
-            ),
-            None
-        );
+        assert_eq!(routes.route(http::Request::get("/nope").body(())?), None);
         Ok(())
     }
 
@@ -252,41 +299,25 @@ mod tests {
 
         assert_eq!(
             routes
-                .route(
-                    http::Request::get("/")
-                        .body(())
-                        .expect("failed to build request")
-                )
+                .route(http::Request::get("/").body(())?)
                 .expect("expected match")
                 .await
                 .body(),
             &1
         );
         assert!(routes
-            .route(
-                http::Request::get("/foo/str")
-                    .body(())
-                    .expect("failed to build request")
-            )
+            .route(http::Request::get("/foo/str").body(())?)
             .is_none());
         assert_eq!(
             routes
-                .route(
-                    http::Request::get("/foo/1")
-                        .body(())
-                        .expect("failed to build request")
-                )
+                .route(http::Request::get("/foo/1").body(())?)
                 .expect("expected match")
                 .await
                 .body(),
             &2
         );
         assert!(routes
-            .route(
-                http::Request::get("/nope")
-                    .body(())
-                    .expect("failed to build request")
-            )
+            .route(http::Request::get("/nope").body(())?)
             .is_none());
         Ok(())
     }
