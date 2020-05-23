@@ -120,13 +120,13 @@ where
         req: Request<H::Body>,
     ) -> Option<H::Output> {
         let uri = req.uri().clone();
-        let uri = uri.path();
-        for index in self.routes.matches(uri) {
+        let path = uri.path();
+        for index in self.routes.matches(path) {
             let (ref regex, ref matcher, ref handler) = self.handlers[index];
             if !matcher.matches(&req) {
                 continue;
             }
-            return Some(handler.call(req, regex.captures(uri)));
+            return Some(handler.call(req, regex.captures(path)));
         }
         None
     }
