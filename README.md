@@ -9,7 +9,7 @@
 </p>
 
 <div align="center">
-  <a href="https://github.com/softprops/again/enroute">
+  <a href="https://github.com/softprops/enroute/actions">
 		<img src="https://github.com/softprops/enroute/workflows/Main/badge.svg"/>
 	</a>
   <a href="https://crates.io/crates/enroute">
