@@ -322,21 +322,92 @@
 <span id="322">322</span>
 <span id="323">323</span>
 <span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! A parsimonious, framework and IO agnostic HTTP request router.</span>
+<span class="doccomment">//! 🛩️ A parsimonious, framework and IO agnostic HTTP request router.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! enroute is opinionated about being simple with a focus fast and flexible.</span>
+<span class="doccomment">//! Enroute is opinionated about being simple with a focus fast and flexible.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Simple</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! There are very few components to enroute. There is no IO component and there</span>
-<span class="doccomment">//! are no framework specific coupling points.</span>
+<span class="doccomment">//! are no framework specific coupling points. It is only composed of types for routing</span>
+<span class="doccomment">//! HTTP requests. It leverages the Rust community standard `http` crate for those types.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Fast</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! enroute leverage the regex crates [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests</span>
+<span class="doccomment">//! enroute leverage the regex crate&#39;s [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests</span>
 <span class="doccomment">//! on all patterns in a single pass. This means there is less work for enroute</span>
-<span class="doccomment">//! to do.</span>
+<span class="doccomment">//! to do for each request. Doing less work wastes less time and less cpu resources.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Flexible</span>
 <span class="doccomment">//!</span>
@@ -354,7 +425,8 @@
 <span class="doccomment">//! which is an extension point for matching additional parts of requests.</span>
 <span class="doccomment">//! Perhaps on http methods, or header values or query string parameters.</span>
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header</span>::<span class="ident">HeaderName</span>, <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>};
-<span class="kw">use</span> <span class="ident">regex</span>::{<span class="ident">Captures</span>, <span class="ident">Regex</span>, <span class="ident">RegexSet</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Captures</span>;
+<span class="kw">use</span> <span class="ident">regex</span>::{<span class="ident">Regex</span>, <span class="ident">RegexSet</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 
 <span class="doccomment">/// A secondary means of routing requests</span>
@@ -367,6 +439,69 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
+
+    <span class="kw">fn</span> <span class="ident">and</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(
+        <span class="self">self</span>,
+        <span class="ident">b</span>: <span class="ident">M</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">And</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">M</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="self">Self</span>: <span class="ident">Sized</span>,
+        <span class="ident">M</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
+    {
+        <span class="ident">And</span> { <span class="ident">a</span>: <span class="self">self</span>, <span class="ident">b</span> }
+    }
+
+    <span class="kw">fn</span> <span class="ident">or</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(
+        <span class="self">self</span>,
+        <span class="ident">b</span>: <span class="ident">M</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Or</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">M</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="self">Self</span>: <span class="ident">Sized</span>,
+        <span class="ident">M</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
+    {
+        <span class="ident">Or</span> { <span class="ident">a</span>: <span class="self">self</span>, <span class="ident">b</span> }
+    }
+}
+
+<span class="doccomment">/// Utility fn for coercing a capable type into a `Matcher`</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">m</span>: <span class="kw">impl</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> {
+    <span class="ident">m</span>
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">And</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+    <span class="ident">a</span>: <span class="ident">A</span>,
+    <span class="ident">b</span>: <span class="ident">B</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">Bod</span><span class="op">&gt;</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">And</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">A</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+    <span class="ident">B</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+{
+    <span class="kw">fn</span> <span class="ident">matches</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">a</span>.<span class="ident">matches</span>(<span class="ident">req</span>) <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">matches</span>(<span class="ident">req</span>)
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Or</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+    <span class="ident">a</span>: <span class="ident">A</span>,
+    <span class="ident">b</span>: <span class="ident">B</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">Bod</span><span class="op">&gt;</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Or</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">A</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+    <span class="ident">B</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+{
+    <span class="kw">fn</span> <span class="ident">matches</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Bod</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">a</span>.<span class="ident">matches</span>(<span class="ident">req</span>) <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">matches</span>(<span class="ident">req</span>)
+    }
 }
 
 <span class="kw">struct</span> <span class="ident">Any</span>;
@@ -432,9 +567,8 @@
     <span class="ident">H</span>: <span class="ident">Handler</span>,
 {
     <span class="ident">routes</span>: <span class="ident">RegexSet</span>,
-    <span class="ident">patterns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Regex</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">type_complexity</span>)]</span>
-    <span class="ident">handlers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">H</span>)<span class="op">&gt;</span>,
+    <span class="ident">handlers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Regex</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">H</span>)<span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Router</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
@@ -447,14 +581,13 @@
         <span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Output</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">uri</span>.<span class="ident">path</span>();
-        <span class="kw">for</span> <span class="ident">index</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">matches</span>(<span class="ident">uri</span>) {
-            <span class="kw">let</span> (<span class="kw-2">ref</span> <span class="ident">matcher</span>, <span class="kw-2">ref</span> <span class="ident">handler</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handlers</span>[<span class="ident">index</span>];
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">uri</span>.<span class="ident">path</span>();
+        <span class="kw">for</span> <span class="ident">index</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">matches</span>(<span class="ident">path</span>) {
+            <span class="kw">let</span> (<span class="kw-2">ref</span> <span class="ident">regex</span>, <span class="kw-2">ref</span> <span class="ident">matcher</span>, <span class="kw-2">ref</span> <span class="ident">handler</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handlers</span>[<span class="ident">index</span>];
             <span class="kw">if</span> <span class="op">!</span><span class="ident">matcher</span>.<span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>) {
                 <span class="kw">continue</span>;
             }
-            <span class="kw">let</span> <span class="ident">regex</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">patterns</span>[<span class="ident">index</span>];
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">handler</span>.<span class="ident">call</span>(<span class="ident">req</span>, <span class="ident">regex</span>.<span class="ident">captures</span>(<span class="ident">uri</span>)));
+            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">handler</span>.<span class="ident">call</span>(<span class="ident">req</span>, <span class="ident">regex</span>.<span class="ident">captures</span>(<span class="ident">path</span>)));
         }
         <span class="prelude-val">None</span>
     }
@@ -465,9 +598,8 @@
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
 {
-    <span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">type_complexity</span>)]</span>
-    <span class="ident">handlers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">H</span>)<span class="op">&gt;</span>,
+    <span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">H</span>)<span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Builder</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
@@ -475,10 +607,7 @@
     <span class="ident">H</span>: <span class="ident">Handler</span>,
 {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Builder</span> {
-            <span class="ident">routes</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">handlers</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-        }
+        <span class="ident">Builder</span> { <span class="ident">routes</span>: <span class="macro">vec</span><span class="macro">!</span>[] }
     }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Builder</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
@@ -536,20 +665,19 @@
         <span class="ident">M</span>: <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
     {
         <span class="comment">// \A (begin) ... \Z (end)</span>
-        <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">push</span>([<span class="string">r&quot;\A&quot;</span>, <span class="ident">route</span>, <span class="string">r&quot;\z&quot;</span>].<span class="ident">join</span>(<span class="string">&quot;&quot;</span>));
-        <span class="self">self</span>.<span class="ident">handlers</span>.<span class="ident">push</span>((<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">matcher</span>), <span class="ident">handler</span>));
+        <span class="self">self</span>.<span class="ident">routes</span>
+            .<span class="ident">push</span>(([<span class="string">r&quot;\A&quot;</span>, <span class="ident">route</span>, <span class="string">r&quot;\z&quot;</span>].<span class="ident">join</span>(<span class="string">&quot;&quot;</span>), <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">matcher</span>), <span class="ident">handler</span>));
         <span class="self">self</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Router</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">Router</span> {
-            <span class="ident">routes</span>: <span class="ident">RegexSet</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">iter</span>())<span class="question-mark">?</span>,
-            <span class="ident">patterns</span>: <span class="self">self</span>
+            <span class="ident">routes</span>: <span class="ident">RegexSet</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pat</span>, <span class="kw">_</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">pat</span>))<span class="question-mark">?</span>,
+            <span class="ident">handlers</span>: <span class="self">self</span>
                 .<span class="ident">routes</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="ident">r</span>))
+                .<span class="ident">into_iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pat</span>, <span class="ident">matcher</span>, <span class="ident">handler</span>)<span class="op">|</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">pat</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> (<span class="ident">r</span>, <span class="ident">matcher</span>, <span class="ident">handler</span>)))
                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
-            <span class="ident">handlers</span>: <span class="self">self</span>.<span class="ident">handlers</span>,
         })
     }
 }
@@ -577,6 +705,15 @@
         ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span> {
             <span class="kw-2">*</span><span class="self">self</span>
         }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_or_matchers</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">mat</span> <span class="op">=</span> <span class="ident">matcher</span>(<span class="ident">Method</span>::<span class="ident">GET</span>).<span class="ident">or</span>(<span class="ident">Method</span>::<span class="ident">POST</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mat</span>.<span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="ident">Request</span>::<span class="ident">builder</span>().<span class="ident">method</span>(<span class="ident">Method</span>::<span class="ident">GET</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mat</span>.<span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="ident">Request</span>::<span class="ident">builder</span>().<span class="ident">method</span>(<span class="ident">Method</span>::<span class="ident">POST</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">mat</span>.<span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="ident">Request</span>::<span class="ident">builder</span>().<span class="ident">method</span>(<span class="ident">Method</span>::<span class="ident">DELETE</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>));
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -618,6 +755,9 @@
                 <span class="ident">Box</span>::<span class="ident">pin</span>(<span class="kw">async</span> { <span class="ident">http</span>::<span class="ident">Response</span>::<span class="ident">builder</span>().<span class="ident">body</span>(<span class="number">1</span>).<span class="ident">unwrap</span>() })
             })
             .<span class="ident">get</span>(<span class="string">&quot;/foo/(?P&lt;id&gt;\\d+)&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+                <span class="ident">Box</span>::<span class="ident">pin</span>(<span class="kw">async</span> { <span class="ident">http</span>::<span class="ident">Response</span>::<span class="ident">builder</span>().<span class="ident">body</span>(<span class="number">2</span>).<span class="ident">unwrap</span>() })
+            })
+            .<span class="ident">route</span>(<span class="ident">matcher</span>(<span class="ident">Method</span>::<span class="ident">OPTIONS</span>).<span class="ident">or</span>(<span class="ident">Method</span>::<span class="ident">GET</span>), <span class="string">&quot;/test&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
                 <span class="ident">Box</span>::<span class="ident">pin</span>(<span class="kw">async</span> { <span class="ident">http</span>::<span class="ident">Response</span>::<span class="ident">builder</span>().<span class="ident">body</span>(<span class="number">2</span>).<span class="ident">unwrap</span>() })
             })
             .<span class="ident">build</span>()<span class="question-mark">?</span>;
