@@ -1,17 +1,18 @@
-//! A parsimonious, framework and IO agnostic HTTP request router.
+//! 🛩️ A parsimonious, framework and IO agnostic HTTP request router.
 //!
-//! enroute is opinionated about being simple with a focus fast and flexible.
+//! Enroute is opinionated about being simple with a focus fast and flexible.
 //!
 //! ## Simple
 //!
 //! There are very few components to enroute. There is no IO component and there
-//! are no framework specific coupling points.
+//! are no framework specific coupling points. It is only composed of types for routing
+//! HTTP requests. It leverages the Rust community standard `http` crate for those types.
 //!
 //! ## Fast
 //!
-//! enroute leverage the regex crates [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests
+//! enroute leverage the regex crate's [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests
 //! on all patterns in a single pass. This means there is less work for enroute
-//! to do.
+//! to do for each request. Doing less work wastes less time and less cpu resources.
 //!
 //! ## Flexible
 //!
@@ -29,7 +30,8 @@
 //! which is an extension point for matching additional parts of requests.
 //! Perhaps on http methods, or header values or query string parameters.
 use http::{header::HeaderName, HeaderValue, Method, Request};
-use regex::{Captures, Regex, RegexSet};
+pub use regex::Captures;
+use regex::{Regex, RegexSet};
 use std::error::Error;
 
 /// A secondary means of routing requests
@@ -66,10 +68,8 @@ pub trait Matcher<B> {
     }
 }
 
-pub fn matcher<B, M>(m: M) -> impl Matcher<B>
-where
-    M: Matcher<B>,
-{
+/// Utility fn for coercing a capable type into a `Matcher`
+pub fn matcher<B>(m: impl Matcher<B>) -> impl Matcher<B> {
     m
 }
 
@@ -312,7 +312,7 @@ mod tests {
 
     #[test]
     fn test_or_matchers() -> Result<(), Box<dyn Error>> {
-        let mat = matcher::<(), _>(Method::GET).or(Method::POST);
+        let mat = matcher(Method::GET).or(Method::POST);
         assert!(mat.matches(&Request::builder().method(Method::GET).body(())?));
         assert!(mat.matches(&Request::builder().method(Method::POST).body(())?));
         assert!(!mat.matches(&Request::builder().method(Method::DELETE).body(())?));
@@ -358,6 +358,9 @@ mod tests {
                 Box::pin(async { http::Response::builder().body(1).unwrap() })
             })
             .get("/foo/(?P<id>\\d+)", |_| {
+                Box::pin(async { http::Response::builder().body(2).unwrap() })
+            })
+            .route(matcher(Method::OPTIONS).or(Method::GET), "/test", |_| {
                 Box::pin(async { http::Response::builder().body(2).unwrap() })
             })
             .build()?;
