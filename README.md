@@ -1,9 +1,11 @@
 <h1 align="center">
+  🛩️
+  <br/>
   enroute
 </h1>
 
 <p align="center">
-   wasm-compatible parsimonious http request router
+   wasm-ready parsimonious http request router
 </p>
 
 <div align="center">
