@@ -25,4 +25,25 @@
 
 <br />
 
+## Where does this fit in?
+
+Almost anywhere!
+
+There are many web server frameworks in Rust, each packaged with its own request routing api along with many other things typically packaged with servers and frameworks.
+
+Sometimes you need just request routing. Sometimes you you don't need a server. This is `enroute's` target space. 
+
+Enroute is embeddable.
+
+You could actually embed enroute in your framework if you're framework is using the standard `http` types available in the Rust ecosystem.
+
+## Install
+
+Add the following in your `Cargo.toml` file
+
+```toml
+[dependencies]
+enroute = "0.1"
+```
+
  Doug Tangren (softprops) 2020
