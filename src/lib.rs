@@ -137,7 +137,6 @@ pub struct Builder<H>
 where
     H: Handler,
 {
-    #[allow(clippy::type_complexity)]
     routes: Vec<(String, Box<dyn Matcher<H::Body>>, H)>,
 }
 
