@@ -21,8 +21,9 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         with:
           components: clippy
+          rust-version: nightly
       - uses: actions/checkout@v2
-      - run: cargo clippy --all-targets -- -D clippy::all
+      - run: cargo clippy -- -D clippy::all
 
   compile:
     runs-on: ubuntu-latest
