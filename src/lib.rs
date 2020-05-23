@@ -42,6 +42,71 @@ pub trait Matcher<B> {
         &self,
         req: &Request<B>,
     ) -> bool;
+
+    fn and<M>(
+        self,
+        b: M,
+    ) -> And<Self, M>
+    where
+        Self: Sized,
+        M: Matcher<B>,
+    {
+        And { a: self, b }
+    }
+
+    fn or<M>(
+        self,
+        b: M,
+    ) -> Or<Self, M>
+    where
+        Self: Sized,
+        M: Matcher<B>,
+    {
+        Or { a: self, b }
+    }
+}
+
+pub fn matcher<B, M>(m: M) -> impl Matcher<B>
+where
+    M: Matcher<B>,
+{
+    m
+}
+
+pub struct And<A, B> {
+    a: A,
+    b: B,
+}
+
+impl<A, B, Bod> Matcher<Bod> for And<A, B>
+where
+    A: Matcher<Bod>,
+    B: Matcher<Bod>,
+{
+    fn matches(
+        &self,
+        req: &Request<Bod>,
+    ) -> bool {
+        self.a.matches(req) && self.b.matches(req)
+    }
+}
+
+pub struct Or<A, B> {
+    a: A,
+    b: B,
+}
+
+impl<A, B, Bod> Matcher<Bod> for Or<A, B>
+where
+    A: Matcher<Bod>,
+    B: Matcher<Bod>,
+{
+    fn matches(
+        &self,
+        req: &Request<Bod>,
+    ) -> bool {
+        self.a.matches(req) || self.b.matches(req)
+    }
 }
 
 struct Any;
@@ -243,6 +308,15 @@ mod tests {
         ) -> Self::Output {
             *self
         }
+    }
+
+    #[test]
+    fn test_or_matchers() -> Result<(), Box<dyn Error>> {
+        let mat = matcher::<(), _>(Method::GET).or(Method::POST);
+        assert!(mat.matches(&Request::builder().method(Method::GET).body(())?));
+        assert!(mat.matches(&Request::builder().method(Method::POST).body(())?));
+        assert!(!mat.matches(&Request::builder().method(Method::DELETE).body(())?));
+        Ok(())
     }
 
     #[test]
