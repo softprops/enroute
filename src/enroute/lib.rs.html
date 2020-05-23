@@ -291,11 +291,77 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">Method</span>, <span class="ident">Request</span>};
+<span class="doccomment">//! A parsimonious, framework and IO agnostic HTTP request router.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! enroute is opinionated about being simple with a focus fast and flexible.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Simple</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! There are very few components to enroute. There is no IO component and there</span>
+<span class="doccomment">//! are no framework specific coupling points.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Fast</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! enroute leverage the regex crates [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests</span>
+<span class="doccomment">//! on all patterns in a single pass. This means there is less work for enroute</span>
+<span class="doccomment">//! to do.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Flexible</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Regexes are universal language for pattern recognition. As such there</span>
+<span class="doccomment">//! is incentive to not reinvent a router specific language for http path matching</span>
+<span class="doccomment">//! Many routing systems provide a means of extracting information from paths</span>
+<span class="doccomment">//! Regex capture groups also do this with built in way of expressing restrictions</span>
+<span class="doccomment">//! on the desired type within those capture groups. enroute exposes these captures</span>
+<span class="doccomment">//! directly to handlers.</span>
+<span class="doccomment">//! Because regular expressions are a universal language it lends it self to more</span>
+<span class="doccomment">//! problem domains than can be preemptively designed by an invented</span>
+<span class="doccomment">//! syntax.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! enroute takes a wholistic view of requests with a notion of a `Matcher`</span>
+<span class="doccomment">//! which is an extension point for matching additional parts of requests.</span>
+<span class="doccomment">//! Perhaps on http methods, or header values or query string parameters.</span>
+<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header</span>::<span class="ident">HeaderName</span>, <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>};
 <span class="kw">use</span> <span class="ident">regex</span>::{<span class="ident">Captures</span>, <span class="ident">Regex</span>, <span class="ident">RegexSet</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 
+<span class="doccomment">/// A secondary means of routing requests</span>
+<span class="doccomment">/// via request introspection</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// A handful of Matcher impls are provided for http type values.</span>
+<span class="doccomment">/// These also serve as an extension point</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">matches</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -323,6 +389,33 @@
     }
 }
 
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HeaderName</span> {
+    <span class="kw">fn</span> <span class="ident">matches</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="self">self</span>).<span class="ident">is_some</span>()
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> (<span class="ident">HeaderName</span>, <span class="ident">HeaderValue</span>) {
+    <span class="kw">fn</span> <span class="ident">matches</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="self">self</span>;
+        <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="ident">k</span>).<span class="ident">filter</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="ident">value</span> <span class="op">=</span><span class="op">=</span> <span class="ident">v</span>).<span class="ident">is_some</span>()
+    }
+}
+
+<span class="doccomment">/// An abstract request handler</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The only concrete details assumed as that a handler</span>
+<span class="doccomment">/// is interested in an http request and optionally information</span>
+<span class="doccomment">/// extracted from a request path template</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// All details about what a handler responds with is up to its implementation,</span>
+<span class="doccomment">/// maximizing the flexibility adapting to different runtimes</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Handler</span> {
     <span class="kw">type</span> <span class="ident">Body</span>;
     <span class="kw">type</span> <span class="ident">Output</span>;
@@ -333,6 +426,7 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
+<span class="doccomment">/// A compiled set of routes</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Router</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
@@ -347,6 +441,7 @@
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
 {
+    <span class="doccomment">/// The primary means of resolving a route</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Body</span><span class="op">&gt;</span>,
@@ -365,6 +460,7 @@
     }
 }
 
+<span class="doccomment">/// Collects a list of route definitions</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Builder</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
@@ -389,6 +485,7 @@
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
 {
+    <span class="doccomment">/// Routes requests by path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">any</span>(
         <span class="self">self</span>,
         <span class="ident">route</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
@@ -397,6 +494,7 @@
         <span class="self">self</span>.<span class="ident">route</span>(<span class="ident">Any</span>, <span class="ident">route</span>, <span class="ident">handler</span>)
     }
 
+    <span class="doccomment">/// Routes requests by path and HTTP GET method</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(
         <span class="self">self</span>,
         <span class="ident">route</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
@@ -456,6 +554,7 @@
     }
 }
 
+<span class="doccomment">/// Creates a new `Builder`</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Builder</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">H</span>: <span class="ident">Handler</span>,
@@ -482,39 +581,18 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">it_works</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">routes</span>().<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>, <span class="number">1</span>).<span class="ident">get</span>(<span class="string">&quot;/foo/(?P&lt;id&gt;\\d+)&quot;</span>, <span class="number">2</span>).<span class="ident">build</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">routes</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()
+            .<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>, <span class="number">1</span>)
+            .<span class="ident">get</span>(<span class="string">&quot;/foo/(?P&lt;id&gt;\\d+)&quot;</span>, <span class="number">2</span>)
+            .<span class="ident">route</span>(<span class="ident">HeaderName</span>::<span class="ident">from_static</span>(<span class="string">&quot;x-canary-test&quot;</span>), <span class="string">&quot;/test&quot;</span>, <span class="number">3</span>)
+            .<span class="ident">build</span>()<span class="question-mark">?</span>;
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">routes</span>.<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">routes</span>.<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/str&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>), <span class="prelude-val">None</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">routes</span>.<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            ),
-            <span class="prelude-val">Some</span>(<span class="number">1</span>)
-        );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">routes</span>.<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/str&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            ),
-            <span class="prelude-val">None</span>
-        );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">routes</span>.<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/1&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            ),
+            <span class="ident">routes</span>.<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/1&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>),
             <span class="prelude-val">Some</span>(<span class="number">2</span>)
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">routes</span>.<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/nope&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            ),
-            <span class="prelude-val">None</span>
-        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">routes</span>.<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/nope&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>), <span class="prelude-val">None</span>);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -546,41 +624,25 @@
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">routes</span>
-                .<span class="ident">route</span>(
-                    <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>)
-                        .<span class="ident">body</span>(())
-                        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-                )
+                .<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;expected match&quot;</span>)
                 .<span class="kw">await</span>
                 .<span class="ident">body</span>(),
             <span class="kw-2">&amp;</span><span class="number">1</span>
         );
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">routes</span>
-            .<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/str&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            )
+            .<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/str&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>)
             .<span class="ident">is_none</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">routes</span>
-                .<span class="ident">route</span>(
-                    <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/1&quot;</span>)
-                        .<span class="ident">body</span>(())
-                        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-                )
+                .<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/foo/1&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;expected match&quot;</span>)
                 .<span class="kw">await</span>
                 .<span class="ident">body</span>(),
             <span class="kw-2">&amp;</span><span class="number">2</span>
         );
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">routes</span>
-            .<span class="ident">route</span>(
-                <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/nope&quot;</span>)
-                    .<span class="ident">body</span>(())
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>)
-            )
+            .<span class="ident">route</span>(<span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">get</span>(<span class="string">&quot;/nope&quot;</span>).<span class="ident">body</span>(())<span class="question-mark">?</span>)
             .<span class="ident">is_none</span>());
         <span class="prelude-val">Ok</span>(())
     }

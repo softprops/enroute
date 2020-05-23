@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["routes",""]],"struct":[["Builder",""],["Router",""]],"trait":[["Handler",""],["Matcher",""]]});
+initSidebarItems({"fn":[["routes","Creates a new `Builder`"]],"struct":[["Builder","Collects a list of route definitions"],["Router","A compiled set of routes"]],"trait":[["Handler","An abstract request handler"],["Matcher","A secondary means of routing requests via request introspection"]]});
