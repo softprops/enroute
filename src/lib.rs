@@ -1,28 +1,28 @@
 //! A parsimonious, framework and IO agnostic HTTP request router.
 //!
-//! enroute is opinionated about being simple with a focus fast and flexible. 
-//! 
+//! enroute is opinionated about being simple with a focus fast and flexible.
+//!
 //! ## Simple
-//! 
+//!
 //! There are very few components to enroute. There is no IO component and there
 //! are no framework specific coupling points.
-//! 
+//!
 //! ## Fast
-//! 
+//!
 //! enroute leverage the regex crates [`RegexSet`](https://docs.rs/regex/1.3.7/regex/struct.RegexSet.html) feature to filter requests
-//! on all patterns in a single pass. This means there is less work for enroute 
+//! on all patterns in a single pass. This means there is less work for enroute
 //! to do.
-//! 
+//!
 //! ## Flexible
 //!
 //! Regexes are universal language for pattern recognition. As such there
 //! is incentive to not reinvent a router specific language for http path matching
 //! Many routing systems provide a means of extracting information from paths
 //! Regex capture groups also do this with built in way of expressing restrictions
-//! on the desired type within those capture groups. enroute exposes these captures 
+//! on the desired type within those capture groups. enroute exposes these captures
 //! directly to handlers.
 //! Because regular expressions are a universal language it lends it self to more
-//! problem domains than can be preemptively designed by an invented 
+//! problem domains than can be preemptively designed by an invented
 //! syntax.
 //!
 //! enroute takes a wholistic view of requests with a notion of a `Matcher`
@@ -85,7 +85,7 @@ impl<B> Matcher<B> for (HeaderName, HeaderValue) {
 
 /// An abstract request handler
 ///
-/// The only concrete details assumed as that a handler 
+/// The only concrete details assumed as that a handler
 /// is interested in an http request and optionally information
 /// extracted from a request path template
 ///
