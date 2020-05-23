@@ -172,6 +172,7 @@ where
     H: Handler,
 {
     routes: RegexSet,
+    #[allow(clippy::type_complexity)]
     handlers: Vec<(Regex, Box<dyn Matcher<H::Body>>, H)>,
 }
 
@@ -202,6 +203,7 @@ pub struct Builder<H>
 where
     H: Handler,
 {
+    #[allow(clippy::type_complexity)]
     routes: Vec<(String, Box<dyn Matcher<H::Body>>, H)>,
 }
 
